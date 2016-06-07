@@ -30,6 +30,7 @@ exports.read = function(req,res) {
 	sendReply(res,404,{
       system: "File not found"
     });
+    return false;
   }
   
   if ( stats.isDirectory() ) {
@@ -82,6 +83,40 @@ exports.read = function(req,res) {
 
 exports.write = function(req,res) {
 
-  var uri = req.params.uri;
+  var uri = req.body.uri;
+  var buffer = req.body.buffer;
+  
+  try {
+    stats = fs.lstatSync(uri);
+  } catch (e) {
+  }
+  
+  if ( typeof stats !== 'undefined' ) {
+    console.log(stats.isDirectory());
+    if ( stats.isDirectory() ) {
+      sendReply(res,400,{
+        system: "The file you tried to write is a directory"
+      });
+      return false;
+    }
+  }
+  
+  //Try to write the file.
+  fs.writeFile(uri,buffer,{
+    encoding: "utf8"
+  }, function(err){
+  	if ( err ) {
+      sendReply(res,403,{
+        system: "Could not write file"
+      });
+      return false;
+    }
+    
+    sendReply(res,200,{
+      system: "File written"
+    });
+    return true;
+    
+  });
   
 };

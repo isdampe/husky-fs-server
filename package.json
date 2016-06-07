@@ -4,7 +4,8 @@
   "description": "A little HTTP bi-directional file server for the Husky editor",
   "main": "server.js",
   "dependencies": {
-    "express": "4.13.4"
+    "express": "4.13.4",
+    "body-parser": "1.15.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
