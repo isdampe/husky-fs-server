@@ -50,7 +50,6 @@ app.use(function(req,res,next){
 });
 
 //Routes.
-app.all('/fs/:uri', husky.read);
 app.all('/fs/:uri/read', husky.read);
 app.all('/fs/write', husky.write);
 
