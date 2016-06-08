@@ -20,7 +20,7 @@ var sendReply = function(res,status,data) {
 
 };
 
-var read = function(req,res) {
+exports.read = function(req,res) {
 
   var uri = req.params.uri;
 
@@ -78,21 +78,6 @@ var read = function(req,res) {
     });
     return true;
   }
-
-};
-exports.read = read;
-
-exports.autocomplete = function(req,res) {
-
-  var uri = req.params.uri, path;
-
-  path = uri.substring(0,uri.lastIndexOf("/")+1);
-  if ( path.charAt(0) !== "/" ) {
-    path = "/";
-  }
-
-  req.params.uri = path;
-  read(req,res);
 
 };
 

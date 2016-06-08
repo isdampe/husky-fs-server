@@ -16,7 +16,6 @@ app.use(function(req, res, next) {
 //Routes.
 app.get('/fs/:uri', husky.read);
 app.get('/fs/:uri/read', husky.read);
-app.get('/fs/:uri/autocomplete', husky.autocomplete);
 app.post('/fs/write', husky.write);
 
 app.listen(8291, function(){
