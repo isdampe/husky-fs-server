@@ -1,26 +1,26 @@
 var fs = require("fs");
 
 var sendReply = function(res,status,data) {
-  
+
   if ( typeof res == 'undefined' ) {
     throw "husky.sendReply called with no res argument";
     return false;
   }
-  
+
   if ( typeof status == 'undefined' ) {
     status = 200;
   }
-  
+
   if ( typeof data == 'undefined' ) {
     data = {};
   }
-  
+
   res.status(status);
   res.json(data);
-  
+
 };
 
-exports.read = function(req,res) {
+var read = function(req,res) {
 
   var uri = req.params.uri;
 
@@ -32,15 +32,15 @@ exports.read = function(req,res) {
     });
     return false;
   }
-  
+
   if ( stats.isDirectory() ) {
-    
+
 	var dir = fs.readdirSync(uri,{
       encoding: "utf8"
     });
-    
+
     var dirStat = [], obj, fst;
-    
+
     for ( var i=0; i<dir.length; i++ ) {
 
       try {
@@ -57,42 +57,64 @@ exports.read = function(req,res) {
       } catch (e) {
         //Skip.
       }
-      
+
     }
-    
+
     sendReply(res,200,{
       fileList: dirStat
     });
     return true;
-    
+
   }
-  
+
   if ( stats.isFile() ) {
-    
+
     var file = fs.readFileSync(uri,{
       encoding: "utf8"
     });
-    
+
     sendReply(res,200,{
       buffer: file
     });
     return true;
   }
-  
+
+};
+exports.read = read;
+
+exports.autocomplete = function(req,res) {
+
+  var uri = req.params.uri, path;
+
+  path = uri.substring(0,uri.lastIndexOf("/")+1);
+  if ( path.charAt(0) !== "/" ) {
+    path = "/";
+  }
+
+  req.params.uri = path;
+  read(req,res);
+
 };
 
 exports.write = function(req,res) {
 
   var uri = req.body.uri;
   var buffer = req.body.buffer;
-  
+
+  if ( typeof uri === 'undefined' || typeof buffer === 'undefined' ) {
+    sendReply(res,400,{
+      system: "Missing uri or buffer"
+    });
+    return false;
+  }
+
   try {
     stats = fs.lstatSync(uri);
   } catch (e) {
   }
-  
+
   if ( typeof stats !== 'undefined' ) {
-    console.log(stats.isDirectory());
+
     if ( stats.isDirectory() ) {
       sendReply(res,400,{
         system: "The file you tried to write is a directory"
@@ -100,7 +122,7 @@ exports.write = function(req,res) {
       return false;
     }
   }
-  
+
   //Try to write the file.
   fs.writeFile(uri,buffer,{
     encoding: "utf8"
@@ -111,12 +133,12 @@ exports.write = function(req,res) {
       });
       return false;
     }
-    
+
     sendReply(res,200,{
       system: "File written"
     });
     return true;
-    
+
   });
-  
+
 };
