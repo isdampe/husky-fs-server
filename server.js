@@ -1,3 +1,4 @@
+var fs = require("fs");
 var husky = require("./husky.js");
 var express = require("express");
 var bodyParser = require("body-parser");
@@ -6,6 +7,20 @@ app.use( bodyParser.urlencoded({
   extended: true
 }));
 
+var cb = fs.readFileSync("config.json",{encoding:"utf8"});
+if (! cb ) {
+  console.error("No config.json file found.");
+  process.exit(1);
+}
+
+var config;
+try {
+  config = JSON.parse(cb);
+} catch(e) {
+  console.error("Invalid config.json file");
+  process.exit(1);
+}
+
 //Enable CORS.
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -13,11 +28,32 @@ app.use(function(req, res, next) {
   next();
 });
 
-//Routes.
-app.get('/fs/:uri', husky.read);
-app.get('/fs/:uri/read', husky.read);
-app.post('/fs/write', husky.write);
+//Authenticate.
+app.use(function(req,res,next){
 
-app.listen(8291, 'localhost', function(){
+  var user = req.body.user || false;
+  var pass = req.body.pass || false;
+
+  if (! user || ! pass ) {
+    res.status(403);
+    res.end();
+    return false;
+  }
+
+  if ( user !== config.user || pass !== config.pass ) {
+    res.status(403);
+    res.end();
+    return false;
+  }
+
+  next();
+});
+
+//Routes.
+app.all('/fs/:uri', husky.read);
+app.all('/fs/:uri/read', husky.read);
+app.all('/fs/write', husky.write);
+
+app.listen(8291, function(){
   console.log("Server listening on port 8291");
 });
