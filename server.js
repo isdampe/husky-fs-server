@@ -51,6 +51,7 @@ app.use(function(req,res,next){
 
 //Routes.
 app.all('/fs/:uri/read', husky.read);
+app.all('/fs/:uri/ls', husky.ls);
 app.all('/fs/write', husky.write);
 
 app.listen(8291, function(){
